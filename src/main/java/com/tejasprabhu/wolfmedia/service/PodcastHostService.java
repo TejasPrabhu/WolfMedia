@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +21,16 @@ public class PodcastHostService {
     private PodcastHostDAO podcastHostDAO;
 
     public List<PodcastHost> findWithFilters(Map<String, Object> filters) {
-        logger.info("Fetching podcast hosts with filters: {}", filters);
-        return podcastHostDAO.findWithFilters(filters);
+        Map<String, Object> castedFilters = new HashMap<>();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if ("HostID".equals(key)) {
+                castedFilters.put(key, Integer.valueOf(value.toString()));
+            }
+        }
+        logger.info("Fetching podcast hosts with filters: {}", castedFilters);
+        return podcastHostDAO.findWithFilters(castedFilters);
     }
 
     @Transactional

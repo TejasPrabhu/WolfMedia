@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +21,16 @@ public class RecordLabelService {
     private RecordLabelDAO recordLabelDAO;
 
     public List<RecordLabel> findWithFilters(Map<String, Object> filters) {
-        logger.info("Fetching record labels with filters: {}", filters);
-        return recordLabelDAO.findWithFilters(filters);
+        Map<String, Object> castedFilters = new HashMap<>();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if ("labelID".equals(key)) {
+                castedFilters.put(key, Integer.valueOf(value.toString()));
+            }
+        }
+        logger.info("Fetching record labels with filters: {}", castedFilters);
+        return recordLabelDAO.findWithFilters(castedFilters);
     }
 
     @Transactional

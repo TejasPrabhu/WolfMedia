@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +22,35 @@ public class PodcastService {
     @Autowired
     private PodcastDAO podcastDAO;
 
-    public List<Podcast> findWithFilters(Map<String, Object> filters) {
-        logger.info("Fetching podcasts with filters: {}", filters);
-        return podcastDAO.findWithFilters(filters);
+//    public List<Podcast> findWithFilters(Map<String, Object> filters) {
+//        logger.info("Fetching podcasts with filters: {}", filters);
+//        return podcastDAO.findWithFilters(filters);
+//    }
+
+    public List<Podcast> findWithFilters(Map<String, Object> filters){
+        Map<String, Object> castedFilters = new HashMap<>();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if ("hostID".equals(key)) {
+                castedFilters.put(key, Integer.valueOf(value.toString()));
+            } else if  ("podcastID".equals(key)) {
+                castedFilters.put(key, Integer.valueOf(value.toString()));
+            } else if ("releaseDate".equals(key)) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date parsed;
+                try {
+                    parsed = format.parse(value.toString());
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                value = new java.sql.Date(parsed.getTime());
+                castedFilters.put(key, value);
+            }
+        }
+        return podcastDAO.findWithFilters(castedFilters);
     }
+
 
     @Transactional
     public Podcast save(Podcast podcast) {
